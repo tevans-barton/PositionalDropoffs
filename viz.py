@@ -56,11 +56,11 @@ def plot_median_fantasy_points_career_season(age_median_series, position, downlo
         plt.savefig(os.path.abspath('../visualizations/{pos}_median_fantasy_points_career_season.png'.format(pos = position.replace(' ', '_'))))
     plt.show()
 
-def plot_box_and_whiskers_age(normalized_age_fp, position, download = False):
+def plot_box_and_whiskers_age(unstacked_age_fp, position, download = False):
     """
     Plot the box and whiskers plots by ages for a given position
     Arguments:
-        normalized_age_fp: pd.DataFrame, normalized fantasy points by age for a given position
+        unstacked_age_fp: pd.DataFrame, unstacked fantasy points by age for a given position
         position: string, position to label the visualization as
         download: boolean, default false, whether to save the plot to the visualizations folder
     Returns:
@@ -69,12 +69,15 @@ def plot_box_and_whiskers_age(normalized_age_fp, position, download = False):
     plt.figure(figsize = (20, 12))
     #Plot the heatmap
     cmap = sns.diverging_palette(10, 133, as_cmap=True)
-    median_map = normalized_age_fp[['Age', 'Fantasy Points']].groupby('Age').median()['Fantasy Points']
-    my_palette = {h: cmap(median_map[h]) for h in normalized_age_fp['Age']}
-    ax = sns.boxplot(x = normalized_age_fp['Age'], y = normalized_age_fp['Fantasy Points'], linewidth = 2, palette = my_palette)
-    plt.title('Plot of Fantasy Points by Age for {pos}'.format(pos = position), fontsize = 20)
-    plt.ylabel('Individually Scaled Fantasy Points')
-    plt.xlabel('Age')
+    median_map = unstacked_age_fp[['Age', 'Fantasy Points']].groupby('Age').median()['Fantasy Points']
+    overall_median = unstacked_age_fp['Fantasy Points'].median()
+    my_palette = {x: cmap(median_map[x] / (overall_median / .5)) for x in unstacked_age_fp['Age']}
+    sns.boxplot(x = unstacked_age_fp['Age'], y = unstacked_age_fp['Fantasy Points'], linewidth = 2, palette = my_palette)
+    plt.title('{pos} Fantasy Points by Age'.format(pos = position), fontsize = 24)
+    plt.ylabel('Individually Scaled Fantasy Points', fontsize = 18)
+    plt.xlabel('Age', fontsize = 18)
+    plt.xticks(fontsize = 14)
+    plt.yticks(fontsize = 14)
     if download:
         if not os.path.exists(os.path.abspath('../visualizations/')):
             Logger.debug('Making visualizations folder')
@@ -82,3 +85,32 @@ def plot_box_and_whiskers_age(normalized_age_fp, position, download = False):
         plt.savefig(os.path.abspath('../visualizations/{pos}_box_and_whiskers_age.png'.format(pos = position.replace(' ', '_'))))
     plt.show()
 
+
+def plot_box_and_whiskers_career_season(unstacked_career_season_fp, position, download = False):
+    """
+    Plot the box and whiskers plots by career season for a given position
+    Arguments:
+        unstacked_career_season_fp: pd.DataFrame, unstacked fantasy points by career season for a given position
+        position: string, position to label the visualization as
+        download: boolean, default false, whether to save the plot to the visualizations folder
+    Returns:
+        None
+    """
+    plt.figure(figsize = (20, 12))
+    #Plot the heatmap
+    cmap = sns.diverging_palette(10, 133, as_cmap=True)
+    median_map = unstacked_career_season_fp[['Career Season', 'Fantasy Points']].groupby('Career Season').median()['Fantasy Points']
+    overall_median = unstacked_career_season_fp['Fantasy Points'].median()
+    my_palette = {x: cmap(median_map[x] / (overall_median / .5)) for x in unstacked_career_season_fp['Career Season']}
+    sns.boxplot(x = unstacked_career_season_fp['Career Season'], y = unstacked_career_season_fp['Fantasy Points'], linewidth = 2, palette = my_palette)
+    plt.title('{pos} Fantasy Points by Season in Career'.format(pos = position), fontsize = 24)
+    plt.ylabel('Individually Scaled Fantasy Points', fontsize = 18)
+    plt.xlabel('Career Season', fontsize = 18)
+    plt.xticks(fontsize = 14)
+    plt.yticks(fontsize = 14)
+    if download:
+        if not os.path.exists(os.path.abspath('../visualizations/')):
+            Logger.debug('Making visualizations folder')
+            os.mkdir(os.path.abspath('../visualizations'))
+        plt.savefig(os.path.abspath('../visualizations/{pos}_box_and_whiskers_career_season.png'.format(pos = position.replace(' ', '_'))))
+    plt.show()
