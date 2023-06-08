@@ -140,7 +140,7 @@ def plot_heatmap_p_values_age_jumps(p_vals, download = False):
         plt.savefig(os.path.abspath('../visualizations/heatmap_p_values_age_jumps.png'))
     plt.show()
 
-def plot_heatmap_p_values_age_jumps(p_vals, download = False):
+def plot_heatmap_p_values_career_season_jumps(p_vals, download = False):
     """
     Plot the heatmap of p-values for career season jumps
     Arguments:
