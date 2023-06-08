@@ -114,3 +114,53 @@ def plot_box_and_whiskers_career_season(unstacked_career_season_fp, position, do
             os.mkdir(os.path.abspath('../visualizations'))
         plt.savefig(os.path.abspath('../visualizations/{pos}_box_and_whiskers_career_season.png'.format(pos = position.replace(' ', '_'))))
     plt.show()
+
+def plot_heatmap_p_values_age_jumps(p_vals, download = False):
+    """
+    Plot the heatmap of p-values for age jumps
+    Arguments:
+        p_vals: pd.DataFrame, p-values for age jumps
+        download: boolean, default false, whether to save the plot to the visualizations folder
+    Returns:
+        None
+    """
+    plt.figure(figsize = (20, 12))
+    ax = sns.heatmap(p_vals.dropna(axis = 1, thresh = 2), cmap = sns.diverging_palette(10, 133, as_cmap=True), annot = True, fmt = '.5f', cbar=False, vmin=0, vmax=.13)
+    ax.xaxis.tick_top()
+    ax.xaxis.set_label_position('top')
+    plt.xlabel('Age Jump', fontsize = 16, loc='center')
+    plt.ylabel('Position', fontsize = 16)
+    plt.yticks(rotation=0, fontsize = 14)
+    plt.xticks(fontsize = 10)
+    plt.title('P-Values for Paired T-Tests by Age Jump', fontsize = 20)
+    if download:
+        if not os.path.exists(os.path.abspath('../visualizations/')):
+            Logger.debug('Making visualizations folder')
+            os.mkdir(os.path.abspath('../visualizations'))
+        plt.savefig(os.path.abspath('../visualizations/heatmap_p_values_age_jumps.png'))
+    plt.show()
+
+def plot_heatmap_p_values_age_jumps(p_vals, download = False):
+    """
+    Plot the heatmap of p-values for career season jumps
+    Arguments:
+        p_vals: pd.DataFrame, p-values for career season jumps
+        download: boolean, default false, whether to save the plot to the visualizations folder
+    Returns:
+        None
+    """
+    plt.figure(figsize = (20, 12))
+    ax = sns.heatmap(p_vals.dropna(axis = 1, thresh = 2), cmap = sns.diverging_palette(10, 133, as_cmap=True), annot = True, fmt = '.5f', cbar=False, vmin=0, vmax=.13)
+    ax.xaxis.tick_top()
+    ax.xaxis.set_label_position('top')
+    plt.xlabel('Career Season Jump', fontsize = 16, loc='center')
+    plt.ylabel('Position', fontsize = 16)
+    plt.yticks(rotation=0, fontsize = 14)
+    plt.xticks(fontsize = 10)
+    plt.title('P-Values for Paired T-Tests by Career Season Jump', fontsize = 20)
+    if download:
+        if not os.path.exists(os.path.abspath('../visualizations/')):
+            Logger.debug('Making visualizations folder')
+            os.mkdir(os.path.abspath('../visualizations'))
+        plt.savefig(os.path.abspath('../visualizations/heatmap_p_values_career_szn_jumps.png'))
+    plt.show()
