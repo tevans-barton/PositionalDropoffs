@@ -218,12 +218,16 @@ def paired_t_test_by_age(age_df, *, min_years = 0, fp_cutoff_flat = 0):
     """
     fp_age = age_df.copy()
     fp_age = normalized_fantasy_points_by_age(fp_age, min_years = min_years, fp_cutoff_flat = fp_cutoff_flat)
-    #Need at least two values in sample to calculate paired t-test
-    fp_age = fp_age.dropna(axis = 1, thresh = 2)
     p_values = pd.Series()
     for i in range(len(fp_age.columns) - 1):
+        #Create the column name to show the age comparison/jump (e.g. 23-24)
         col_name = str(fp_age.columns[i]) + '-' + str(fp_age.columns[i + 1])
+        #Get players who have entries at both ages for comparison
         temp_df = fp_age[fp_age[fp_age.columns[i]].notnull() & fp_age[fp_age.columns[i + 1]].notnull()]
+        #Need at least two values in sample to calculate paired t-test
+        if len(temp_df) <= 1:
+            continue
+        #Calculate paired t-test p-value
         p_values[col_name] = stats.ttest_rel(temp_df[fp_age.columns[i]], temp_df[fp_age.columns[i + 1]], alternative = 'greater')[1]
     return p_values
 
@@ -242,12 +246,16 @@ def paired_t_test_by_career_season(age_df, *, min_years = 0, fp_cutoff_flat = 0)
     fp_age = age_df.copy()
     fp_age = normalized_fantasy_points_by_career_season(fp_age, min_years = min_years, fp_cutoff_flat = fp_cutoff_flat)
     p_values = pd.Series()
-    #Need at least two values in sample to calculate paired t-test
-    fp_age = fp_age.dropna(axis = 1, thresh = 2)
     for i in range(len(fp_age.columns) - 1):
+        #Create the column name to show the career season comparison/jump (e.g. 3-4)
         col_name = str(fp_age.columns[i]) + '-' + str(fp_age.columns[i + 1])
+        #Get players who have entries at both career seasons for comparison
         temp_df = fp_age[fp_age[fp_age.columns[i]].notnull() & fp_age[fp_age.columns[i + 1]].notnull()]
-        p_values[col_name] = stats.ttest_rel(temp_df[fp_age.columns[i]], temp_df[fp_age.columns[i + 1]], alternative = 'greater')[1]
+        #Need at least two values in sample to calculate paired t-test
+        if len(temp_df) <= 1:
+            continue
+        #Calculate paired t-test p-value
+        p_values[col_name] = stats.ttest_rel(temp_df[temp_df.columns[i]], temp_df[temp_df.columns[i + 1]], alternative = 'greater')[1]
     return p_values
 
 
@@ -266,15 +274,19 @@ def paired_t_test_by_age_and_position(qb_age_df, rb_age_df, wr_age_df, te_age_df
         Returns:
             p_values: pd.DataFrame, paired t-test p-values by age jumps, with each row as a position
     """
+    #Perform the paired t_tests for each position
     qb_p_values = paired_t_test_by_age(qb_age_df, min_years = min_years_dict.get('QB', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('QB', 0))
     rb_p_values = paired_t_test_by_age(rb_age_df, min_years = min_years_dict.get('RB', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('RB', 0))
     wr_p_values = paired_t_test_by_age(wr_age_df, min_years = min_years_dict.get('WR', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('WR', 0))
     te_p_values = paired_t_test_by_age(te_age_df, min_years = min_years_dict.get('TE', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('TE', 0))
+    #Name each of the resulting series
     qb_p_values.name = 'QB'
     rb_p_values.name = 'RB'
     wr_p_values.name = 'WR'
     te_p_values.name = 'TE'
+    #Concatenate the series into a dataframe
     p_values = pd.concat([qb_p_values, rb_p_values, wr_p_values, te_p_values], axis = 1)
+    #Transpose the dataframe to make the rows positions and drop null columns
     p_values = p_values.T
     p_values = p_values.dropna(axis = 1, how = 'all')
     if download:
@@ -302,15 +314,19 @@ def paired_t_test_by_career_season_and_position(qb_age_df, rb_age_df, wr_age_df,
         Returns:
             p_values: pd.DataFrame, paired t-test p-values by age jumps, with each row as a position
     """
+    #Perform the paired t_tests for each position
     qb_p_values = paired_t_test_by_career_season(qb_age_df, min_years = min_years_dict.get('QB', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('QB', 0))
     rb_p_values = paired_t_test_by_career_season(rb_age_df, min_years = min_years_dict.get('RB', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('RB', 0))
     wr_p_values = paired_t_test_by_career_season(wr_age_df, min_years = min_years_dict.get('WR', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('WR', 0))
     te_p_values = paired_t_test_by_career_season(te_age_df, min_years = min_years_dict.get('TE', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('TE', 0))
+    #Name each of the resulting series
     qb_p_values.name = 'QB'
     rb_p_values.name = 'RB'
     wr_p_values.name = 'WR'
     te_p_values.name = 'TE'
+    #Concatenate the series into a dataframe
     p_values = pd.concat([qb_p_values, rb_p_values, wr_p_values, te_p_values], axis = 1)
+    #Transpose the dataframe to make the rows positions and drop null columns
     p_values = p_values.T
     p_values = p_values.dropna(axis = 1, how = 'all')
     if download:
