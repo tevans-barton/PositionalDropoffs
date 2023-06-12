@@ -13,6 +13,7 @@ Logger = logging.getLogger(__name__)
 
 plt.style.use('ggplot')
 
+
 def plot_median_fantasy_points_age(age_median_series, position, download = False):
     """
     Plot the median fantasy points by age for a given position
@@ -33,6 +34,7 @@ def plot_median_fantasy_points_age(age_median_series, position, download = False
             os.mkdir(os.path.abspath('../visualizations'))
         plt.savefig(os.path.abspath('../visualizations/{pos}_median_fantasy_points_age.png'.format(pos = position.replace(' ', '_'))))
     plt.show()
+
 
 def plot_median_fantasy_points_career_season(age_median_series, position, download = False):
     """
@@ -56,6 +58,7 @@ def plot_median_fantasy_points_career_season(age_median_series, position, downlo
         plt.savefig(os.path.abspath('../visualizations/{pos}_median_fantasy_points_career_season.png'.format(pos = position.replace(' ', '_'))))
     plt.show()
 
+
 def plot_box_and_whiskers_age(unstacked_age_fp, position, download = False):
     """
     Plot the box and whiskers plots by ages for a given position
@@ -71,8 +74,8 @@ def plot_box_and_whiskers_age(unstacked_age_fp, position, download = False):
     cmap = sns.diverging_palette(10, 133, as_cmap=True)
     median_map = unstacked_age_fp[['Age', 'Fantasy Points']].groupby('Age').median()['Fantasy Points']
     overall_median = unstacked_age_fp['Fantasy Points'].median()
-    my_palette = {x: cmap(median_map[x] / (overall_median / .5)) for x in unstacked_age_fp['Age']}
-    sns.boxplot(x = unstacked_age_fp['Age'], y = unstacked_age_fp['Fantasy Points'], linewidth = 2, palette = my_palette)
+    my_boxplot_palette = {x: cmap(median_map[x] / (overall_median / .5)) for x in unstacked_age_fp['Age']}
+    sns.boxplot(x = unstacked_age_fp['Age'], y = unstacked_age_fp['Fantasy Points'], linewidth = 2, palette = my_boxplot_palette)
     plt.title('{pos} Fantasy Points by Age'.format(pos = position), fontsize = 24)
     plt.ylabel('Individually Scaled Fantasy Points', fontsize = 18)
     plt.xlabel('Age', fontsize = 18)
@@ -83,6 +86,41 @@ def plot_box_and_whiskers_age(unstacked_age_fp, position, download = False):
             Logger.debug('Making visualizations folder')
             os.mkdir(os.path.abspath('../visualizations'))
         plt.savefig(os.path.abspath('../visualizations/{pos}_box_and_whiskers_age.png'.format(pos = position.replace(' ', '_'))))
+    plt.show()
+
+
+def plot_box_and_whiskers_age_with_table(unstacked_age_fp, p_vals_and_meds, position, download = False):
+    """
+    Plot the box and whiskers plots by ages for a given position
+    Arguments:
+        unstacked_age_fp: pd.DataFrame, unstacked fantasy points by age for a given position
+        p_vals_and_meds: pd.DataFrame, the p-values and medians for each age jump
+        position: string, position to label the visualization as
+        download: boolean, default false, whether to save the plot to the visualizations folder
+    Returns:
+        None
+    """
+    plt.figure(figsize = (20, 12))
+    cmap = sns.diverging_palette(10, 133, as_cmap=True)
+    median_map = unstacked_age_fp[['Age', 'Fantasy Points']].groupby('Age').median()['Fantasy Points']
+    overall_median = unstacked_age_fp['Fantasy Points'].median()
+    my_boxplot_palette = {x: cmap(median_map[x] / (overall_median / .5)) for x in unstacked_age_fp['Age']}
+    sns.boxplot(x = unstacked_age_fp['Age'], y = unstacked_age_fp['Fantasy Points'], linewidth = 2, palette = my_boxplot_palette)
+    med_val_color_fx = lambda x : (x / max([x[0] for x in p_vals_and_meds.values])) + .5
+    p_val_color_fx = lambda x : .8 - (x / 2) if x <= .05 else .45
+    my_table_palette = [[cmap(med_val_color_fx(x)), cmap(p_val_color_fx(y))] for x, y in p_vals_and_meds.fillna(1).values]
+    table = plt.table(cellText = [x.round(6) for x in p_vals_and_meds.values], cellColours=my_table_palette, colLabels = p_vals_and_meds.columns, rowLabels=p_vals_and_meds.index, loc = 'right', bbox = [1.1, 0, .3, 1])
+    table.set_fontsize(20)
+    plt.title('{pos} Fantasy Points by Age'.format(pos = position), fontsize = 24)
+    plt.ylabel('Individually Scaled Fantasy Points', fontsize = 20)
+    plt.xlabel('Age', fontsize = 20)
+    plt.xticks(fontsize = 14)
+    plt.yticks(fontsize = 14)
+    if download:
+        if not os.path.exists(os.path.abspath('../visualizations/')):
+            Logger.debug('Making visualizations folder')
+            os.mkdir(os.path.abspath('../visualizations'))
+        plt.savefig(os.path.abspath('../visualizations/{pos}_box_and_whiskers_age_with_table.png'.format(pos = position.replace(' ', '_'))), bbox_inches = "tight", pad_inches = 1)
     plt.show()
 
 
@@ -97,12 +135,11 @@ def plot_box_and_whiskers_career_season(unstacked_career_season_fp, position, do
         None
     """
     plt.figure(figsize = (20, 12))
-    #Plot the heatmap
     cmap = sns.diverging_palette(10, 133, as_cmap=True)
     median_map = unstacked_career_season_fp[['Career Season', 'Fantasy Points']].groupby('Career Season').median()['Fantasy Points']
     overall_median = unstacked_career_season_fp['Fantasy Points'].median()
-    my_palette = {x: cmap(median_map[x] / (overall_median / .5)) for x in unstacked_career_season_fp['Career Season']}
-    sns.boxplot(x = unstacked_career_season_fp['Career Season'], y = unstacked_career_season_fp['Fantasy Points'], linewidth = 2, palette = my_palette)
+    my_boxplot_palette = {x: cmap(median_map[x] / (overall_median / .5)) for x in unstacked_career_season_fp['Career Season']}
+    sns.boxplot(x = unstacked_career_season_fp['Career Season'], y = unstacked_career_season_fp['Fantasy Points'], linewidth = 2, palette = my_boxplot_palette)
     plt.title('{pos} Fantasy Points by Season in Career'.format(pos = position), fontsize = 24)
     plt.ylabel('Individually Scaled Fantasy Points', fontsize = 18)
     plt.xlabel('Career Season', fontsize = 18)
@@ -114,6 +151,42 @@ def plot_box_and_whiskers_career_season(unstacked_career_season_fp, position, do
             os.mkdir(os.path.abspath('../visualizations'))
         plt.savefig(os.path.abspath('../visualizations/{pos}_box_and_whiskers_career_season.png'.format(pos = position.replace(' ', '_'))))
     plt.show()
+
+
+def plot_box_and_whiskers_career_season_with_table(unstacked_career_season_fp, p_vals_and_meds, position, download = False):
+    """
+    Plot the box and whiskers plots by career season for a given position
+    Arguments:
+        unstacked_career_season_fp: pd.DataFrame, unstacked fantasy points by career season for a given position
+        p_vals_and_meds: pd.DataFrame, the p-values and medians for each season in career jump
+        position: string, position to label the visualization as
+        download: boolean, default false, whether to save the plot to the visualizations folder
+    Returns:
+        None
+    """
+    plt.figure(figsize = (20, 12))
+    cmap = sns.diverging_palette(10, 133, as_cmap=True)
+    median_map = unstacked_career_season_fp[['Career Season', 'Fantasy Points']].groupby('Career Season').median()['Fantasy Points']
+    overall_median = unstacked_career_season_fp['Fantasy Points'].median()
+    my_boxplot_palette = {x: cmap(median_map[x] / (overall_median / .5)) for x in unstacked_career_season_fp['Career Season']}
+    sns.boxplot(x = unstacked_career_season_fp['Career Season'], y = unstacked_career_season_fp['Fantasy Points'], linewidth = 2, palette = my_boxplot_palette)
+    med_val_color_fx = lambda x : (x / max([x[0] for x in p_vals_and_meds.values])) + .5
+    p_val_color_fx = lambda x : .8 - (x / 2) if x <= .05 else .45
+    my_table_palette = [[cmap(med_val_color_fx(x)), cmap(p_val_color_fx(y))] for x, y in p_vals_and_meds.fillna(1).values]
+    table = plt.table(cellText = [x.round(6) for x in p_vals_and_meds.values], cellColours=my_table_palette, colLabels = p_vals_and_meds.columns, rowLabels=p_vals_and_meds.index, loc = 'right', bbox = [1.1, 0, .3, 1])
+    table.set_fontsize(20)
+    plt.title('{pos} Fantasy Points by Season in Career'.format(pos = position), fontsize = 24)
+    plt.ylabel('Individually Scaled Fantasy Points', fontsize = 18)
+    plt.xlabel('Career Season', fontsize = 18)
+    plt.xticks(fontsize = 14)
+    plt.yticks(fontsize = 14)
+    if download:
+        if not os.path.exists(os.path.abspath('../visualizations/')):
+            Logger.debug('Making visualizations folder')
+            os.mkdir(os.path.abspath('../visualizations'))
+        plt.savefig(os.path.abspath('../visualizations/{pos}_box_and_whiskers_career_season_with_table.png'.format(pos = position.replace(' ', '_'))), bbox_inches = "tight", pad_inches = 1)
+    plt.show()
+
 
 def plot_heatmap_p_values_age_jumps(p_vals, download = False):
     """

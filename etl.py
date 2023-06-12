@@ -5,7 +5,7 @@ import os
 import sys
 import time
 sys.path.append('/Users/tevans-barton/AAASideProjects/')
-import pfr_scraping.src.pfr_scraping as pfr_scraping
+from pfr_scraping import pfr_scraping
 package_directory = os.path.dirname(os.path.abspath(__file__))
 
 import logging

@@ -144,10 +144,38 @@ def median_fantasy_points_by_career_season(age_df, *, min_years = 0, fp_cutoff_f
         fp_age.to_csv(os.path.abspath('../data/processed/median_fp_by_career_season_min_szn_{y}_fp_cutoff_{fp}.csv'.format(y = min_years, fp = fp_cutoff_flat)))
     return fp_age
 
-
 def unstack_fantasy_points_and_age(age_df, *, min_years = 0, fp_cutoff_flat = 0, download = False):
     """
     Unstack the fantasy points by age dataframe
+    Arguments:
+        age_df: pd.DataFrame, fantasy points by age
+        keyword:
+            min_years: int, minimum number of years played
+            fp_cutoff_flat: float, minimum fantasy points to have hit in a year
+            download: boolean, default false, whether to save the plot to the data/processed folder
+    Returns:
+        fp_age: pd.DataFrame, fantasy points by age unstacked (Columns: Player Name, Age, Fantasy Points)
+    """
+    fp_age = age_df.copy()
+    fp_age = fp_age.unstack().to_frame().reset_index(drop = False)
+    fp_age.columns = ['Age', 'Player Name', 'Fantasy Points']
+    fp_age = fp_age[fp_age['Fantasy Points'].notnull()].reset_index(drop = True)
+    fp_age['Age'] = fp_age['Age'].astype(int)
+    fp_age = fp_age[['Player Name', 'Age', 'Fantasy Points']]
+    if download:
+        if not os.path.exists(os.path.abspath('../data/')):
+            Logger.debug('Making data folder')
+            os.mkdir(os.path.abspath('../data'))
+        if not os.path.exists(os.path.abspath('../data/processed/')):
+            Logger.debug('Making processed data folder')
+            os.mkdir(os.path.abspath('../data/processed'))
+        fp_age.to_csv(os.path.abspath('../data/processed/unstacked_fp_by_age_min_szn_{y}_fp_cutoff_{fp}.csv'.format(y = min_years, fp = fp_cutoff_flat)))
+    return fp_age
+
+
+def unstack_and_normalize_fantasy_points_and_age(age_df, *, min_years = 0, fp_cutoff_flat = 0, download = False):
+    """
+    Unstack and normalize the fantasy points by age dataframe
     Arguments:
         age_df: pd.DataFrame, fantasy points by age
         keyword:
@@ -175,7 +203,7 @@ def unstack_fantasy_points_and_age(age_df, *, min_years = 0, fp_cutoff_flat = 0,
     return fp_age
 
 
-def unstack_fantasy_points_and_career_season(age_df, *, min_years = 0, fp_cutoff_flat = 0, download = False):
+def unstack_and_normalize_fantasy_points_and_career_season(age_df, *, min_years = 0, fp_cutoff_flat = 0, download = False):
     """
     Unstack age dataframe to fantasy points by career season dataframe
     Arguments:
@@ -205,12 +233,13 @@ def unstack_fantasy_points_and_career_season(age_df, *, min_years = 0, fp_cutoff
     return fp_age
 
 
-def paired_t_test_by_age(age_df, *, min_years = 0, fp_cutoff_flat = 0):
+def paired_t_test_by_age(age_df, *, alternative = 'greater', min_years = 0, fp_cutoff_flat = 0):
     """
         Get a table of paired t-test p-values by age jump
         Arguments:
             age_df: pd.DataFrame, fantasy points by age
         keyword:
+            alternative: string, default 'greater', alternative hypothesis for paired t-test
             min_years: int, minimum number of years played
             fp_cutoff_flat: float, minimum fantasy points to have hit in a year
         Returns:
@@ -228,16 +257,17 @@ def paired_t_test_by_age(age_df, *, min_years = 0, fp_cutoff_flat = 0):
         if len(temp_df) <= 1:
             continue
         #Calculate paired t-test p-value
-        p_values[col_name] = stats.ttest_rel(temp_df[fp_age.columns[i]], temp_df[fp_age.columns[i + 1]], alternative = 'greater')[1]
+        p_values[col_name] = stats.ttest_rel(temp_df[fp_age.columns[i]], temp_df[fp_age.columns[i + 1]], alternative = alternative)[1]
     return p_values
 
 
-def paired_t_test_by_career_season(age_df, *, min_years = 0, fp_cutoff_flat = 0):
+def paired_t_test_by_career_season(age_df, *, alternative = 'greater', min_years = 0, fp_cutoff_flat = 0):
     """
         Get a table of paired t-test p-values by career season jumps
         Arguments:
             age_df: pd.DataFrame, fantasy points by age
             keyword:
+                alternative: string, default 'greater', alternative hypothesis for paired t-test
                 min_years: int, minimum number of years played
                 fp_cutoff_flat: float, minimum fantasy points to have hit in a year
         Returns:
@@ -255,11 +285,11 @@ def paired_t_test_by_career_season(age_df, *, min_years = 0, fp_cutoff_flat = 0)
         if len(temp_df) <= 1:
             continue
         #Calculate paired t-test p-value
-        p_values[col_name] = stats.ttest_rel(temp_df[temp_df.columns[i]], temp_df[temp_df.columns[i + 1]], alternative = 'greater')[1]
+        p_values[col_name] = stats.ttest_rel(temp_df[temp_df.columns[i]], temp_df[temp_df.columns[i + 1]], alternative = alternative)[1]
     return p_values
 
 
-def paired_t_test_by_age_and_position(qb_age_df, rb_age_df, wr_age_df, te_age_df, *, min_years_dict = {}, fp_cutoff_flat_dict = {}, download = False):
+def paired_t_test_by_age_and_position(qb_age_df, rb_age_df, wr_age_df, te_age_df, *, alternative = 'greater', min_years_dict = {}, fp_cutoff_flat_dict = {}, download = False):
     """
         Get a table of paired t-test p-values by age jump, where each row is a position
         Arguments:
@@ -268,6 +298,7 @@ def paired_t_test_by_age_and_position(qb_age_df, rb_age_df, wr_age_df, te_age_df
             wr_age_df: pd.DataFrame, fantasy points by age for WRs
             te_age_df: pd.DataFrame, fantasy points by age for TEs
             keyword:
+                alternative: string, default 'greater', alternative hypothesis for paired t-test
                 min_years_dict: dictionary, minimum number of years played by position, e.g. ['QB' : 3, 'RB' : 5]. Default is 0 for all positions
                 fp_cutoff_flat_dict: dictionary, minimum number of years played by position, e.g. ['QB' : 75, 'RB' : 45]. Default is 0 for all positions
                 download: boolean, default false, whether to save the plot to the data/processed folder
@@ -275,10 +306,10 @@ def paired_t_test_by_age_and_position(qb_age_df, rb_age_df, wr_age_df, te_age_df
             p_values: pd.DataFrame, paired t-test p-values by age jumps, with each row as a position
     """
     #Perform the paired t_tests for each position
-    qb_p_values = paired_t_test_by_age(qb_age_df, min_years = min_years_dict.get('QB', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('QB', 0))
-    rb_p_values = paired_t_test_by_age(rb_age_df, min_years = min_years_dict.get('RB', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('RB', 0))
-    wr_p_values = paired_t_test_by_age(wr_age_df, min_years = min_years_dict.get('WR', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('WR', 0))
-    te_p_values = paired_t_test_by_age(te_age_df, min_years = min_years_dict.get('TE', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('TE', 0))
+    qb_p_values = paired_t_test_by_age(qb_age_df, min_years = min_years_dict.get('QB', 0), alternative = alternative, fp_cutoff_flat = fp_cutoff_flat_dict.get('QB', 0))
+    rb_p_values = paired_t_test_by_age(rb_age_df, min_years = min_years_dict.get('RB', 0), alternative = alternative, fp_cutoff_flat = fp_cutoff_flat_dict.get('RB', 0))
+    wr_p_values = paired_t_test_by_age(wr_age_df, min_years = min_years_dict.get('WR', 0), alternative = alternative, fp_cutoff_flat = fp_cutoff_flat_dict.get('WR', 0))
+    te_p_values = paired_t_test_by_age(te_age_df, min_years = min_years_dict.get('TE', 0), alternative = alternative, fp_cutoff_flat = fp_cutoff_flat_dict.get('TE', 0))
     #Name each of the resulting series
     qb_p_values.name = 'QB'
     rb_p_values.name = 'RB'
@@ -299,15 +330,16 @@ def paired_t_test_by_age_and_position(qb_age_df, rb_age_df, wr_age_df, te_age_df
         p_values.to_csv(os.path.abspath('../data/processed/p_values_by_age.csv'))
     return p_values
 
-def paired_t_test_by_career_season_and_position(qb_age_df, rb_age_df, wr_age_df, te_age_df, *, min_years_dict = {}, fp_cutoff_flat_dict = {}, download = False):
+def paired_t_test_by_career_season_and_position(qb_age_df, rb_age_df, wr_age_df, te_age_df, *, alternative = 'greater', min_years_dict = {}, fp_cutoff_flat_dict = {}, download = False):
     """
-        Get a table of paired t-test p-values by age jump, where each row is a position
+        Get a table of paired t-test p-values by season in career jump, where each row is a position
         Arguments:
             qb_age_df: pd.DataFrame, fantasy points by age for QBs
             rb_age_df: pd.DataFrame, fantasy points by age for RBs
             wr_age_df: pd.DataFrame, fantasy points by age for WRs
             te_age_df: pd.DataFrame, fantasy points by age for TEs
             keyword:
+                alternative: string, default 'greater', alternative hypothesis for paired t-test
                 min_years_dict: dictionary, minimum number of years played by position, e.g. ['QB' : 3, 'RB' : 5]. Default is 0 for all positions
                 fp_cutoff_flat_dict: dictionary, minimum number of years played by position, e.g. ['QB' : 75, 'RB' : 45]. Default is 0 for all positions
                 download: boolean, default false, whether to save the plot to the data/processed folder
@@ -315,10 +347,10 @@ def paired_t_test_by_career_season_and_position(qb_age_df, rb_age_df, wr_age_df,
             p_values: pd.DataFrame, paired t-test p-values by age jumps, with each row as a position
     """
     #Perform the paired t_tests for each position
-    qb_p_values = paired_t_test_by_career_season(qb_age_df, min_years = min_years_dict.get('QB', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('QB', 0))
-    rb_p_values = paired_t_test_by_career_season(rb_age_df, min_years = min_years_dict.get('RB', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('RB', 0))
-    wr_p_values = paired_t_test_by_career_season(wr_age_df, min_years = min_years_dict.get('WR', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('WR', 0))
-    te_p_values = paired_t_test_by_career_season(te_age_df, min_years = min_years_dict.get('TE', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('TE', 0))
+    qb_p_values = paired_t_test_by_career_season(qb_age_df, alternative = alternative, min_years = min_years_dict.get('QB', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('QB', 0))
+    rb_p_values = paired_t_test_by_career_season(rb_age_df, alternative = alternative, min_years = min_years_dict.get('RB', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('RB', 0))
+    wr_p_values = paired_t_test_by_career_season(wr_age_df, alternative = alternative, min_years = min_years_dict.get('WR', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('WR', 0))
+    te_p_values = paired_t_test_by_career_season(te_age_df, alternative = alternative, min_years = min_years_dict.get('TE', 0), fp_cutoff_flat = fp_cutoff_flat_dict.get('TE', 0))
     #Name each of the resulting series
     qb_p_values.name = 'QB'
     rb_p_values.name = 'RB'
@@ -338,3 +370,83 @@ def paired_t_test_by_career_season_and_position(qb_age_df, rb_age_df, wr_age_df,
             os.mkdir(os.path.abspath('../data/processed'))
         p_values.to_csv(os.path.abspath('../data/processed/p_values_by_career_season.csv'))
     return p_values
+
+def median_differences_by_age(age_df, *, min_years = 0, fp_cutoff_flat = 0):
+    """
+        Get a table of changes in median by age jump
+        Arguments:
+            age_df: pd.DataFrame, fantasy points by age
+        keyword:
+            min_years: int, minimum number of years played
+            fp_cutoff_flat: float, minimum fantasy points to have hit in a year
+        Returns:
+            med_diffs: pd.DataFrame, difference in median between ages
+    """
+    fp_age = age_df.copy()
+    fp_age = normalized_fantasy_points_by_age(fp_age, min_years = min_years, fp_cutoff_flat = fp_cutoff_flat)
+    med_vals = pd.Series()
+    for i in range(len(fp_age.columns) - 1):
+        #Create the column name to show the age comparison/jump (e.g. 23-24)
+        col_name = str(fp_age.columns[i]) + '-' + str(fp_age.columns[i + 1])
+        #Calculate median difference
+        med_vals[col_name] = fp_age[fp_age.columns[i + 1]].median() - fp_age[fp_age.columns[i]].median()
+    return med_vals
+
+def median_differences_by_career_season(age_df, *, min_years = 0, fp_cutoff_flat = 0):
+    """
+        Get a table of changes in median by season in career jump
+        Arguments:
+            age_df: pd.DataFrame, fantasy points by age
+        keyword:
+            min_years: int, minimum number of years played
+            fp_cutoff_flat: float, minimum fantasy points to have hit in a year
+        Returns:
+            med_diffs: pd.DataFrame, difference in median between career seasons
+    """
+    fp_age = age_df.copy()
+    fp_age = normalized_fantasy_points_by_career_season(fp_age, min_years = min_years, fp_cutoff_flat = fp_cutoff_flat)
+    med_vals = pd.Series()
+    for i in range(len(fp_age.columns) - 1):
+        #Create the column name to show the age comparison/jump (e.g. 23-24)
+        col_name = str(fp_age.columns[i]) + '-' + str(fp_age.columns[i + 1])
+        #Calculate median difference
+        med_vals[col_name] = fp_age[fp_age.columns[i + 1]].median() - fp_age[fp_age.columns[i]].median()
+    return med_vals
+
+
+def median_and_p_vals_by_age(age_df, *, alternative = 'greater', min_years = 0, fp_cutoff_flat = 0):
+    """
+        Get a table of changes in median and paired t-test p-values by age jump
+        Arguments:
+            age_df: pd.DataFrame, fantasy points by age
+        keyword:
+            alternative: string, default 'greater', alternative hypothesis for paired t-test
+            min_years: int, minimum number of years played
+            fp_cutoff_flat: float, minimum fantasy points to have hit in a year
+        Returns:
+            med_diffs: pd.DataFrame, difference in median between ages
+    """
+    medians = median_differences_by_age(age_df, min_years = min_years, fp_cutoff_flat = fp_cutoff_flat)
+    p_vals = paired_t_test_by_age(age_df, alternative = alternative, min_years = min_years, fp_cutoff_flat = fp_cutoff_flat)
+    medians_and_p_vals = pd.concat([medians, p_vals], axis = 1)
+    medians_and_p_vals.columns = ['Change in Median', 'P-value']
+    return medians_and_p_vals
+
+
+def median_and_p_vals_by_career_season(age_df, *, alternative = 'greater', min_years = 0, fp_cutoff_flat = 0):
+    """
+        Get a table of changes in median and paired t-test p-values by age jump
+        Arguments:
+            age_df: pd.DataFrame, fantasy points by age
+        keyword:
+            alternative: string, default 'greater', alternative hypothesis for paired t-test
+            min_years: int, minimum number of years played
+            fp_cutoff_flat: float, minimum fantasy points to have hit in a year
+        Returns:
+            med_diffs: pd.DataFrame, difference in median between ages
+    """
+    medians = median_differences_by_career_season(age_df, min_years = min_years, fp_cutoff_flat = fp_cutoff_flat)
+    p_vals = paired_t_test_by_career_season(age_df, alternative = alternative, min_years = min_years, fp_cutoff_flat = fp_cutoff_flat)
+    medians_and_p_vals = pd.concat([medians, p_vals], axis = 1)
+    medians_and_p_vals.columns = ['Change in Median', 'P-value']
+    return medians_and_p_vals
