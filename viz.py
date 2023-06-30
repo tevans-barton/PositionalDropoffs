@@ -107,9 +107,9 @@ def plot_box_and_whiskers_age_with_table(unstacked_age_fp, p_vals_and_meds, posi
     my_boxplot_palette = {x: cmap(median_map[x] / (overall_median / .5)) for x in unstacked_age_fp['Age']}
     sns.boxplot(x = unstacked_age_fp['Age'], y = unstacked_age_fp['Fantasy Points'], linewidth = 2, palette = my_boxplot_palette)
     med_val_color_fx = lambda x : (x / max([x[0] for x in p_vals_and_meds.values])) + .5
-    p_val_color_fx = lambda x : .8 - (x / 2) if x <= .05 else .45
-    my_table_palette = [[cmap(med_val_color_fx(x)), cmap(p_val_color_fx(y))] for x, y in p_vals_and_meds.fillna(1).values]
-    table = plt.table(cellText = [x.round(6) for x in p_vals_and_meds.values], cellColours=my_table_palette, colLabels = p_vals_and_meds.columns, rowLabels=p_vals_and_meds.index, loc = 'right', bbox = [1.1, 0, .3, 1])
+    p_val_color_fx = lambda x : (1, 1, 0, .8) if x <= .05 else (.211, .211, .211, .3)
+    my_table_palette = [[cmap(med_val_color_fx(x)), p_val_color_fx(y)] for x, y in p_vals_and_meds.fillna(1).values]
+    table = plt.table(cellText = [x.round(8) for x in p_vals_and_meds.values], cellColours=my_table_palette, colLabels = p_vals_and_meds.columns, rowLabels=p_vals_and_meds.index, loc = 'right', bbox = [1.1, 0, .3, 1])
     table.set_fontsize(20)
     plt.title('{pos} Fantasy Points by Age'.format(pos = position), fontsize = 24)
     plt.ylabel('Individually Scaled Fantasy Points', fontsize = 20)
@@ -171,9 +171,9 @@ def plot_box_and_whiskers_career_season_with_table(unstacked_career_season_fp, p
     my_boxplot_palette = {x: cmap(median_map[x] / (overall_median / .5)) for x in unstacked_career_season_fp['Career Season']}
     sns.boxplot(x = unstacked_career_season_fp['Career Season'], y = unstacked_career_season_fp['Fantasy Points'], linewidth = 2, palette = my_boxplot_palette)
     med_val_color_fx = lambda x : (x / max([x[0] for x in p_vals_and_meds.values])) + .5
-    p_val_color_fx = lambda x : .8 - (x / 2) if x <= .05 else .45
-    my_table_palette = [[cmap(med_val_color_fx(x)), cmap(p_val_color_fx(y))] for x, y in p_vals_and_meds.fillna(1).values]
-    table = plt.table(cellText = [x.round(6) for x in p_vals_and_meds.values], cellColours=my_table_palette, colLabels = p_vals_and_meds.columns, rowLabels=p_vals_and_meds.index, loc = 'right', bbox = [1.1, 0, .3, 1])
+    p_val_color_fx = lambda x : (1, 1, 0, .8) if x <= .05 else (.211, .211, .211, .3)
+    my_table_palette = [[cmap(med_val_color_fx(x)), p_val_color_fx(y)] for x, y in p_vals_and_meds.fillna(1).values]
+    table = plt.table(cellText = [x.round(7) for x in p_vals_and_meds.values], cellColours=my_table_palette, colLabels = p_vals_and_meds.columns, rowLabels=p_vals_and_meds.index, loc = 'right', bbox = [1.1, 0, .3, 1])
     table.set_fontsize(20)
     plt.title('{pos} Fantasy Points by Season in Career'.format(pos = position), fontsize = 24)
     plt.ylabel('Individually Scaled Fantasy Points', fontsize = 18)
