@@ -1,6 +1,8 @@
 /notebooks/*
-/data/raw
+/visualizations/*
+/data/*
 notes.txt
+outline.txt
 .DS_Store
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -157,7 +159,17 @@ dmypy.json
 cython_debug/
 
 #Keep
+!data/raw
 !notebooks/streamlined.ipynb
+!visualizations/Quarter_Back_box_and_whiskers_age_with_table.png
+!visualizations/Quarter_Back_box_and_whiskers_career_season_with_table.png
+!visualizations/Running_Back_box_and_whiskers_age_with_table.png
+!visualizations/Running_Back_box_and_whiskers_career_season_with_table.png
+!visualizations/Wide_Receiver_box_and_whiskers_age_with_table.png
+!visualizations/Wide_Receiver_box_and_whiskers_career_season_with_table.png
+!visualizations/Tight_End_box_and_whiskers_age_with_table.png
+!visualizations/Tight_End_box_and_whiskers_career_season_with_table.png
+
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
