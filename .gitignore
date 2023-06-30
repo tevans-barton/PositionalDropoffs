@@ -1,6 +1,7 @@
 /notebooks/*
 /visualizations/*
 /data/*
+/data/raw/RB_carries_fantasy_points.csv
 notes.txt
 outline.txt
 .DS_Store
